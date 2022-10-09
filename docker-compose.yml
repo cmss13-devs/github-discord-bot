@@ -1,0 +1,8 @@
+services:
+  discordbot:
+    image: discordbot:latest
+    volumes:
+      - ./config:/home/discord_bot/config
+      - ./data:/home/discord_bot/data
+    ports:
+      - 3000:3000

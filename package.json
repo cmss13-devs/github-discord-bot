@@ -1,0 +1,19 @@
+{
+    "scripts": {
+        "dev": "nodemon ./app/app.ts",
+        "start": "node ./app.js",
+        "build": "tsc "
+    },
+    "type": "commonjs",
+    "dependencies": {
+        "@octokit/webhooks-types": "^6.4.0",
+        "crypto": "^1.0.1",
+        "discord.js": "^14.5.0",
+        "express": "^4.18.2",
+        "ts-node": "^10.9.1",
+        "typescript": "^4.8.4"
+    },
+    "devDependencies": {
+        "nodemon": "^2.0.20"
+    }
+}
