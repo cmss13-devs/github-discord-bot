@@ -49,6 +49,8 @@ app.post("/", async (req, res) => {
         Reopened(client, prData);
         return res.send("OK");
     }
+
+    return res.send("OK")
 })
 
 client.once('ready', () => {
