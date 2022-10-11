@@ -5,7 +5,7 @@ import { readFileSync, existsSync } from 'fs'
 
 export const ClosedMerged = async (client: Client, event: PullRequestClosedEvent) => {
     const channel = await client.channels.fetch(infoChannel) as TextChannel;
-    channel.send(`Pull Request #${event.number} merged by ${event.pull_request.merged_by.login}\n${event.pull_request.user.login} - __**${event.pull_request.title}**__\n${event.pull_request.html_url}`);
+    channel.send(`Pull Request #${event.number} merged by ${event.pull_request.merged_by.login}\n${event.pull_request.user.login} - __**${event.pull_request.title}**__\n<${event.pull_request.html_url}>`);
 
     let data = {};
     if(existsSync("data/data.json")) {
