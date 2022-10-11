@@ -1,0 +1,17 @@
+[Unit]
+Description=Discord Bot Deployment
+After=docker.service
+Requires=docker.service
+
+[Service]
+WorkingDirectory=/home/waltermeldron/github-discord-bot
+Restart=always
+ExecStartPre=docker-compose -p discordbot stop discordbot
+ExecStart=docker-compose -p discordbot up --force-recreate --no-build
+KillMode=mixed
+TimeoutStopSec=30
+SendSIGKILL=yes
+FinalKillSignal=SIGINT
+
+[Install]
+WantedBy=multi-user.target
