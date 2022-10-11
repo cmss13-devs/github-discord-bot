@@ -2,7 +2,11 @@ services:
   discordbot:
     image: discordbot:latest
     volumes:
-      - ./config:/home/discord_bot/config
-      - ./data:/home/discord_bot/data
+      - type: bind
+        source: ./data/
+        target: /home/discord_bot/config
+      - type: bind
+        source: ./config/
+        target: /home/discord_bot/data
     ports:
-      - 3000:3000
+      - "3000:3000"
