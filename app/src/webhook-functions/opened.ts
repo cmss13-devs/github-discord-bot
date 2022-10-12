@@ -26,7 +26,7 @@ export const Opened = async (client: Client, event: PullRequestEvent) => {
         }
     }
 
-    const changelog = changelog_match[1].trim().split("\n").map(val => val.replace(/:(.*)/, "").trim());
+    const changelog = changelog_match[0].trim().split("\n").map(val => val.replace(/:(.*)/, "").trim());
 
     let containedLabels = [];
     for(const label of changelog) {
