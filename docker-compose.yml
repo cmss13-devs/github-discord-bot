@@ -4,7 +4,7 @@ services:
   discordbot:
     image: discordbot:latest
     volumes:
-      - ./config:/srv/github-discord-bot/config
-      - ./data:/srv/github-discord-bot/data
+      - ./config:/srv/github_discord_bot/config
+      - ./data:/srv/github_discord_bot/data
     ports:
       - "192.223.24.63:3000:3000"
