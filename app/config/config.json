@@ -5,6 +5,7 @@
         "add",
         "balance"
     ],
+    "changelogChannel": "",
     "forumChannel": "",
     "infoChannel": ""
 }
