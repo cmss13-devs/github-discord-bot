@@ -7,4 +7,4 @@ services:
       - ./config:/home/github-discord-bot/config
       - ./data:/srv/github-discord-bot/data
     ports:
-      - "3000:0.0.0.0:3000"
+      - "3000:192.223.24.63:3000"
