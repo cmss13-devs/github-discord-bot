@@ -1,11 +1,9 @@
-import { Client, GatewayIntentBits, TextChannel } from 'discord.js';
+import { Client, GatewayIntentBits } from 'discord.js';
 import { accessToken, githubWebhookAuthorizationToken } from "./config/config.json";
 import express from "express";
 import { createHmac, timingSafeEqual } from "crypto";
 import { ClosedMerged } from './src/webhook-functions/closed-merged';
 import { Opened } from './src/webhook-functions/opened';
-import { Closed } from './src/webhook-functions/closed';
-import { Reopened } from './src/webhook-functions/reopened';
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] })
 const app = express();
@@ -39,15 +37,7 @@ app.post("/", async (req, res) => {
         if(prData.pull_request.merged) {
             ClosedMerged(client, prData);
             return res.send("OK");
-        } else {
-            Closed(client, prData);
-            return res.send("OK")
         }
-    }
-
-    if(prData.action === "reopened") {
-        Reopened(client, prData);
-        return res.send("OK");
     }
 
     return res.send("OK")

@@ -1,11 +1,6 @@
 {
     "accessToken": "",
     "githubWebhookAuthorizationToken": "",
-    "changelogTagsToSearchFor": [
-        "add",
-        "balance"
-    ],
     "changelogChannel": "",
-    "forumChannel": "",
     "infoChannel": ""
 }
