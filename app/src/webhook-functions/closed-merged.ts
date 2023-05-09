@@ -18,6 +18,9 @@ const validChangelogTags = {
     "config": "Config",
     "admin": "Admin",
     "server": "Backend",
+    "ui": "User Interface",
+    "mapadd": "Mapping",
+    "maptweak": "Mapping"
 }
 
 export const ClosedMerged = async (client: Client, event: PullRequestClosedEvent) => {
