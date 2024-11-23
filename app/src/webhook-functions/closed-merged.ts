@@ -27,6 +27,11 @@ export const ClosedMerged = async (client: Client, event: PullRequestClosedEvent
     const channel = await client.channels.fetch(infoChannel) as TextChannel;
     channel.send(`Pull Request #${event.number} merged by ${event.pull_request.merged_by.login}\n${event.pull_request.user.login} - __**${event.pull_request.title}**__\n<${event.pull_request.html_url}>`);
 
+    // https://stackoverflow.com/a/57688223
+    const truncateString = (string = '', maxLength = 194) => 
+        string.length > maxLength 
+          ? `${string.substring(0, maxLength)}…`
+          : string
 
     const body = event.pull_request.body
     let regex = /🆑(.*)\/🆑/ms
@@ -47,25 +52,54 @@ export const ClosedMerged = async (client: Client, event: PullRequestClosedEvent
                 if(dataToPrint[fieldTitle] === undefined) {
                     dataToPrint[fieldTitle] = [];
                     orderOfChangelog.push(fieldTitle);
-                }   
-                dataToPrint[fieldTitle].push(`- ${data.replace(/(.*):/, "").trim()}`);
+                }
+                // Truncate each line to 199-200 chars (depends on \n later on)
+                dataToPrint[fieldTitle].push(`- ${truncateString(data.replace(/(.*):/, "").trim())}`);
             }
         }
 
         if(Object.keys(dataToPrint).length >= 0) {
             const changelog = await client.channels.fetch(changelogChannel) as TextChannel;
-            const embed = new EmbedBuilder()
-                .setTitle(`${event.pull_request.title} (#${event.number})`);
-            embed.setURL(event.pull_request.html_url);
+            const allEmbeds: EmbedBuilder[] = [new EmbedBuilder()];
+            allEmbeds[0].setTitle(`${event.pull_request.title} (#${event.number})`);
+            allEmbeds[0].setURL(event.pull_request.html_url);
+            allEmbeds[0].setAuthor({ name: event.pull_request.user.login, iconURL: event.pull_request.user.avatar_url, url: event.pull_request.user.html_url });
             for(const key of orderOfChangelog) {
-                const data = dataToPrint[key];
-                embed.addFields({
-                    name: key, 
-                    value: data.join("\n")
-                });
+                // Split category to new message when approaching limit
+                if(allEmbeds[allEmbeds.length-1].length >= 1600) {
+                    allEmbeds.push(new EmbedBuilder());
+                }
+                
+                let dataTitle = key;
+                let dataSoFar = "";
+                for(let i = 0; i < dataToPrint[key].length; i++) {
+                    dataSoFar += dataToPrint[key][i]
+                    if(i != dataToPrint[key].length - 1) {
+                        // This isn't the last one for this category...
+                        dataSoFar += "\n";
+
+                        // Split data to new message when approaching limit
+                        if(allEmbeds[allEmbeds.length-1].length + dataSoFar.length >= 1800) {
+                            allEmbeds[allEmbeds.length-1].addFields({
+                                name: dataTitle,
+                                value: dataSoFar
+                            });
+                            dataTitle = "\u200b"; // Blank
+                            dataSoFar = "";
+                            allEmbeds.push(new EmbedBuilder());
+                        }
+                    }
+                    allEmbeds[allEmbeds.length-1].addFields({
+                        name: dataTitle,
+                        value: dataSoFar
+                    });
+                }
             }
-            embed.setAuthor({ name: event.pull_request.user.login, iconURL: event.pull_request.user.avatar_url, url: event.pull_request.user.html_url });
-            changelog.send({ embeds: [embed] });
+            
+            // Now actually send the message(s)
+            for(const embed of allEmbeds) {
+                changelog.send({ embeds: [embed] });
+            }
         }
     }
 }
