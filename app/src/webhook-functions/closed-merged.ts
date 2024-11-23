@@ -68,7 +68,7 @@ export const ClosedMerged = async (client: Client, event: PullRequestClosedEvent
                     orderOfChangelog.push(fieldTitle);
                 }
                 // Truncate each line to 1002-1003 chars (depends on \n later on)
-                dataToPrint[fieldTitle].push(`- ${truncateString(data.replace(/(.*):/, "").trim(), VALUE_LENGTH)}`);
+                dataToPrint[fieldTitle].push(`- ${truncateString(data.replace(/^(.*?):/, "").trim(), VALUE_LENGTH)}`);
             }
         }
 
