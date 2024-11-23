@@ -1,4 +1,4 @@
-import { Client, TextChannel, EmbedBuilder } from "discord.js";
+import { Client, TextChannel, EmbedBuilder, APIEmbed } from "discord.js";
 import { PullRequestClosedEvent } from "@octokit/webhooks-types";
 import { infoChannel, changelogChannel } from '../../config/config.json'
 
@@ -33,12 +33,21 @@ export const ClosedMerged = async (client: Client, event: PullRequestClosedEvent
           ? `${string.substring(0, maxLength)}…`
           : string
 
+    // Until discord.js version bumping it sorted:
+    // https://github.com/discordjs/discord.js/blob/main/packages/builders/src/util/componentUtil.ts#L8
+    const embedLength = (data: APIEmbed) =>
+        (data.title?.length ?? 0) +
+        (data.description?.length ?? 0) +
+        (data.fields?.reduce((prev, curr) => prev + curr.name.length + curr.value.length, 0) ?? 0) +
+        (data.footer?.text.length ?? 0) +
+        (data.author?.name.length ?? 0)
+
     const body = event.pull_request.body
     let regex = /🆑(.*)\/🆑/ms
     let changelog_match = regex.exec(body);
-	if(changelog_match === null) {
+    if(changelog_match === null) {
         regex = /:cl:(.*)\/:cl:/ms
-		changelog_match = regex.exec(body);
+        changelog_match = regex.exec(body);
     }
 
     if(changelog_match) {
@@ -66,7 +75,8 @@ export const ClosedMerged = async (client: Client, event: PullRequestClosedEvent
             allEmbeds[0].setAuthor({ name: event.pull_request.user.login, iconURL: event.pull_request.user.avatar_url, url: event.pull_request.user.html_url });
             for(const key of orderOfChangelog) {
                 // Split category to new message when approaching limit
-                if(allEmbeds[allEmbeds.length-1].length >= 1600) {
+                //if(allEmbeds[allEmbeds.length-1].length >= 1600) {
+                if(embedLength(allEmbeds[allEmbeds.length-1].data) >= 1600) {
                     allEmbeds.push(new EmbedBuilder());
                 }
                 
@@ -79,7 +89,8 @@ export const ClosedMerged = async (client: Client, event: PullRequestClosedEvent
                         dataSoFar += "\n";
 
                         // Split data to new message when approaching limit
-                        if(allEmbeds[allEmbeds.length-1].length + dataSoFar.length >= 1800) {
+                        //if(allEmbeds[allEmbeds.length-1].length + dataSoFar.length >= 1800) {
+                        if(embedLength(allEmbeds[allEmbeds.length-1].data) + dataSoFar.length >= 1800) {
                             allEmbeds[allEmbeds.length-1].addFields({
                                 name: dataTitle,
                                 value: dataSoFar
