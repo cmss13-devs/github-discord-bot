@@ -37,17 +37,17 @@ export const ClosedMerged = async (client: Client, event: PullRequestClosedEvent
     // https://github.com/discordjs/discord.js/blob/main/packages/builders/src/util/componentUtil.ts#L8
     const embedLength = (data: APIEmbed) =>
         (data.title?.length ?? 0) +
-		(data.description?.length ?? 0) +
-		(data.fields?.reduce((prev, curr) => prev + curr.name.length + curr.value.length, 0) ?? 0) +
-		(data.footer?.text.length ?? 0) +
-		(data.author?.name.length ?? 0)
+        (data.description?.length ?? 0) +
+        (data.fields?.reduce((prev, curr) => prev + curr.name.length + curr.value.length, 0) ?? 0) +
+        (data.footer?.text.length ?? 0) +
+        (data.author?.name.length ?? 0)
 
     const body = event.pull_request.body
     let regex = /🆑(.*)\/🆑/ms
     let changelog_match = regex.exec(body);
-	if(changelog_match === null) {
+    if(changelog_match === null) {
         regex = /:cl:(.*)\/:cl:/ms
-		changelog_match = regex.exec(body);
+        changelog_match = regex.exec(body);
     }
 
     if(changelog_match) {
