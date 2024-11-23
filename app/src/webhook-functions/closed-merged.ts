@@ -89,11 +89,11 @@ export const ClosedMerged = async (client: Client, event: PullRequestClosedEvent
                             allEmbeds.push(new EmbedBuilder());
                         }
                     }
-                    allEmbeds[allEmbeds.length-1].addFields({
-                        name: dataTitle,
-                        value: dataSoFar
-                    });
                 }
+                allEmbeds[allEmbeds.length-1].addFields({
+                    name: dataTitle,
+                    value: dataSoFar
+                });
             }
             
             // Now actually send the message(s)
