@@ -1,6 +1,7 @@
 import { Client, TextChannel, EmbedBuilder, APIEmbed } from "discord.js";
 import { PullRequestClosedEvent } from "@octokit/webhooks-types";
-import { infoChannel, changelogChannel } from '../../config/config.json'
+import { prChannel, changelogChannel } from '../../config/config.json'
+import { truncateString } from "./helpers";
 
 const validChangelogTags = { // Up to 25 (per embed), max length per is 256
     "add": "Feature",
@@ -23,20 +24,14 @@ const validChangelogTags = { // Up to 25 (per embed), max length per is 256
     "maptweak": "Mapping"
 }
 
-export const ClosedMerged = async (client: Client, event: PullRequestClosedEvent) => {
-    const channel = await client.channels.fetch(infoChannel) as TextChannel;
-    channel.send(`Pull Request #${event.number} merged by ${event.pull_request.merged_by.login}\n${event.pull_request.user.login} - __**${event.pull_request.title}**__\n<${event.pull_request.html_url}>`);
+export const ClosedMergedPullRequest = async (client: Client, event: PullRequestClosedEvent) => {
+    const channel = await client.channels.fetch(prChannel) as TextChannel;
+    channel.send(`Pull Request #${event.number} merged by ${event.pull_request.merged_by?.login}\n${event.pull_request.user.login} - __**${event.pull_request.title}**__\n<${event.pull_request.html_url}>`);
 
     const TITLE_LENGTH = 256;
     const AUTHOR_LENGTH = 256;
     const VALUE_LENGTH = 1000; // Actually 1024
     const EMBED_LENGTH = 6000;
-
-    // https://stackoverflow.com/a/57688223
-    const truncateString = (string = '', maxLength = 256) => 
-        string.length > maxLength 
-          ? `${string.substring(0, maxLength - 3)}…`
-          : string
 
     // Until discord.js version bumping is sorted to do EmbedBuilder.length:
     // https://github.com/discordjs/discord.js/blob/main/packages/builders/src/util/componentUtil.ts#L8
@@ -49,20 +44,20 @@ export const ClosedMerged = async (client: Client, event: PullRequestClosedEvent
 
     const body = event.pull_request.body
     let regex = /🆑(.*)\/🆑/ms
-    let changelog_match = regex.exec(body);
+    let changelog_match = regex.exec(body!);
     if(changelog_match === null) {
         regex = /:cl:(.*)\/:cl:/ms
-        changelog_match = regex.exec(body);
+        changelog_match = regex.exec(body!);
     }
 
     if(changelog_match) {
         const changelogList = changelog_match[0].trim().split("\n");
         let dataToPrint: Record<string, string[]> = {};
-        const orderOfChangelog = [];
+        const orderOfChangelog : string[] = [];
         for(const data of changelogList) {
             const label = data.replace(/:(.*)/, "").trim()
             if(label in validChangelogTags) {
-                const fieldTitle = validChangelogTags[label]
+                const fieldTitle : string = validChangelogTags[label]
                 if(dataToPrint[fieldTitle] === undefined) {
                     dataToPrint[fieldTitle] = [];
                     orderOfChangelog.push(fieldTitle);
