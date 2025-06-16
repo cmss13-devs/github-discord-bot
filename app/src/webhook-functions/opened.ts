@@ -11,6 +11,10 @@ export const OpenedPullRequest = async (client: Client, event: PullRequestOpened
         return;
     }
 
+    if(!prChannel) {
+        return;
+    }
+
     const channel = await client.channels.fetch(prChannel) as TextChannel;
 
     channel.send(`Pull Request #${event.number} opened by ${pullRequest.user.login}\n${pullRequest.user.login} - __**${pullRequest.title}**__\n<${pullRequest.html_url}>`);
@@ -25,6 +29,10 @@ export const OpenedIssue = async (client: Client, event: IssuesOpenedEvent) => {
 
     if(isBlacklisted(issue.title, issue.user.login, issue.body, blacklist)) {
         console.log(`Skipping Issue "${issue.title}" (#${issue.number}) by ${issue.user.login} for matching blacklist!`)
+        return;
+    }
+
+    if(!issueChannel) {
         return;
     }
 

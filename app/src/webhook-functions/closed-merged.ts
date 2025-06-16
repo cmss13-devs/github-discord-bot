@@ -26,9 +26,15 @@ const validChangelogTags = { // Up to 25 (per embed), max length per is 256
 
 export const ClosedMergedPullRequest = async (client: Client, event: PullRequestClosedEvent) => {
     const pullRequest = event.pull_request;
-    const channel = await client.channels.fetch(prChannel) as TextChannel;
 
-    channel.send(`Pull Request #${event.number} merged by ${pullRequest.merged_by?.login}\n${pullRequest.user.login} - __**${pullRequest.title}**__\n<${pullRequest.html_url}>`);
+    if(prChannel) {
+        const channel = await client.channels.fetch(prChannel) as TextChannel;
+        channel.send(`Pull Request #${event.number} merged by ${pullRequest.merged_by?.login}\n${pullRequest.user.login} - __**${pullRequest.title}**__\n<${pullRequest.html_url}>`);
+    }
+
+    if(!changelogChannel) {
+        return;
+    }
 
     const TITLE_LENGTH = 256;
     const AUTHOR_LENGTH = 256;
@@ -128,6 +134,10 @@ export const ClosedIssue = async (client: Client, event: IssuesClosedEvent) => {
 
     if(isBlacklisted(issue.title, issue.user.login, issue.body, blacklist)) {
         console.log(`Skipping Issue close "${issue.title}" (#${issue.number}) by ${issue.user.login} for matching blacklist!`)
+        return;
+    }
+
+    if(!issueChannel) {
         return;
     }
 
