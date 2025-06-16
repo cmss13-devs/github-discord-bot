@@ -135,7 +135,7 @@ export const ClosedIssue = async (client: Client, event: IssuesClosedEvent) => {
     let embed = new EmbedBuilder();
     embed.setTitle(truncateString(`Issue closed: #${issue.number} ${issue.title}`, TITLE_LENGTH));
     embed.setURL(issue.html_url);
-    embed.setAuthor({ name: truncateString(issue.user.login, AUTHOR_LENGTH), iconURL: issue.user.avatar_url, url: issue.user.html_url });
+    embed.setAuthor({ name: truncateString(event.sender.login, AUTHOR_LENGTH), iconURL: event.sender.avatar_url, url: event.sender.html_url });
 
     channel.send({ embeds: [embed] })
 }
