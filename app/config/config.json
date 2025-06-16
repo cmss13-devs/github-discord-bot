@@ -2,5 +2,7 @@
     "accessToken": "",
     "githubWebhookAuthorizationToken": "",
     "changelogChannel": "",
-    "infoChannel": ""
+    "prChannel": "",
+    "issueChannel": "",
+    "blacklist" : [""]
 }

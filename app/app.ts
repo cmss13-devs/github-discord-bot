@@ -1,9 +1,10 @@
 import { Client, GatewayIntentBits } from 'discord.js';
+import { WebhookEvent } from "@octokit/webhooks-types";
 import { accessToken, githubWebhookAuthorizationToken } from "./config/config.json";
 import express from "express";
 import { createHmac, timingSafeEqual } from "crypto";
-import { ClosedMerged } from './src/webhook-functions/closed-merged';
-import { Opened } from './src/webhook-functions/opened';
+import { ClosedMergedPullRequest } from './src/webhook-functions/closed-merged';
+import { OpenedPullRequest, OpenedIssue } from './src/webhook-functions/opened';
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] })
 const app = express();
@@ -26,17 +27,27 @@ app.use(express.json({
 }));
 
 app.post("/", async (req, res) => {
-    const prData = req.body;
+    const data : WebhookEvent = req.body;
 
-    if(prData.action === "opened") {
-        Opened(client, prData);
-        return res.send("OK");
-    }
+    if("action" in data) {
+        if("pull_request" in data) {
+            if(data.action === "opened") {
+                OpenedPullRequest(client, data);
+                return res.send("OK");
+            }
 
-    if(prData.action === "closed") {
-        if(prData.pull_request.merged) {
-            ClosedMerged(client, prData);
-            return res.send("OK");
+            if(data.action === "closed") {
+                if(data.pull_request.merged) {
+                    ClosedMergedPullRequest(client, data);
+                    return res.send("OK");
+                }
+            }
+        }
+        else if("issue" in data) {
+            if(data.action === "opened") {
+                OpenedIssue(client, data);
+                return res.send("OK");
+            }
         }
     }
 
