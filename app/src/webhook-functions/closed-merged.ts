@@ -1,7 +1,7 @@
 import { Client, TextChannel, EmbedBuilder, APIEmbed } from "discord.js";
-import { PullRequestClosedEvent } from "@octokit/webhooks-types";
-import { prChannel, changelogChannel } from '../../config/config.json'
-import { truncateString } from "./helpers";
+import { IssuesClosedEvent, PullRequestClosedEvent } from "@octokit/webhooks-types";
+import { prChannel, issueChannel, changelogChannel, blacklist } from '../../config/config.json'
+import { truncateString, isBlacklisted } from "./helpers";
 
 const validChangelogTags = { // Up to 25 (per embed), max length per is 256
     "add": "Feature",
@@ -118,4 +118,24 @@ export const ClosedMergedPullRequest = async (client: Client, event: PullRequest
             }
         }
     }
+}
+
+export const ClosedIssue = async (client: Client, event: IssuesClosedEvent) => {
+    const issue = event.issue;
+
+    const TITLE_LENGTH = 256;
+    const AUTHOR_LENGTH = 256;
+
+    if(isBlacklisted(issue.title, issue.user.login, issue.body, blacklist)) {
+        console.log(`Skipping Issue close "${issue.title}" (#${issue.number}) by ${issue.user.login} for matching blacklist!`)
+        return;
+    }
+
+    const channel = await client.channels.fetch(issueChannel) as TextChannel;
+    let embed = new EmbedBuilder();
+    embed.setTitle(truncateString(`Issue closed: #${issue.number} ${issue.title}`, TITLE_LENGTH));
+    embed.setURL(issue.html_url);
+    embed.setAuthor({ name: truncateString(issue.user.login, AUTHOR_LENGTH), iconURL: issue.user.avatar_url, url: issue.user.html_url });
+
+    channel.send({ embeds: [embed] })
 }

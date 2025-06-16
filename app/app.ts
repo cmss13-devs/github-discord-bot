@@ -3,7 +3,7 @@ import { WebhookEvent } from "@octokit/webhooks-types";
 import { accessToken, githubWebhookAuthorizationToken } from "./config/config.json";
 import express from "express";
 import { createHmac, timingSafeEqual } from "crypto";
-import { ClosedMergedPullRequest } from './src/webhook-functions/closed-merged';
+import { ClosedMergedPullRequest, ClosedIssue } from './src/webhook-functions/closed-merged';
 import { OpenedPullRequest, OpenedIssue } from './src/webhook-functions/opened';
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] })
@@ -46,6 +46,11 @@ app.post("/", async (req, res) => {
         else if("issue" in data) {
             if(data.action === "opened") {
                 OpenedIssue(client, data);
+                return res.send("OK");
+            }
+
+            if(data.action === "closed") {
+                ClosedIssue(client, data);
                 return res.send("OK");
             }
         }

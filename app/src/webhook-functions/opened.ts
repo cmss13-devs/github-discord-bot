@@ -7,7 +7,7 @@ export const OpenedPullRequest = async (client: Client, event: PullRequestOpened
     const pullRequest = event.pull_request;
 
     if(isBlacklisted(pullRequest.title, pullRequest.user.login, pullRequest.body, blacklist)) {
-        console.log(`Skipping PR ${pullRequest.title} (#${pullRequest.number}) by ${pullRequest.user.login} for matching blacklist!`)
+        console.log(`Skipping PR "${pullRequest.title}" (#${pullRequest.number}) by ${pullRequest.user.login} for matching blacklist!`)
         return;
     }
 
@@ -24,7 +24,7 @@ export const OpenedIssue = async (client: Client, event: IssuesOpenedEvent) => {
     const DESC_LENGTH = 500;
 
     if(isBlacklisted(issue.title, issue.user.login, issue.body, blacklist)) {
-        console.log(`Skipping Issue ${issue.title} (#${issue.number}) by ${issue.user.login} for matching blacklist!`)
+        console.log(`Skipping Issue "${issue.title}" (#${issue.number}) by ${issue.user.login} for matching blacklist!`)
         return;
     }
 
@@ -38,7 +38,7 @@ export const OpenedIssue = async (client: Client, event: IssuesOpenedEvent) => {
     }
 
     let embed = new EmbedBuilder();
-    embed.setTitle(truncateString(`Issue Opened: #${issue.number} ${issue.title}`, TITLE_LENGTH));
+    embed.setTitle(truncateString(`Issue opened: #${issue.number} ${issue.title}`, TITLE_LENGTH));
     embed.setURL(issue.html_url);
     embed.setAuthor({ name: truncateString(issue.user.login, AUTHOR_LENGTH), iconURL: issue.user.avatar_url, url: issue.user.html_url });
     embed.setDescription(snippet);
