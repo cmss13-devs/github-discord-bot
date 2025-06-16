@@ -1,4 +1,4 @@
-import { Client, TextChannel } from "discord.js";
+import { Client, EmbedBuilder, TextChannel } from "discord.js";
 import { IssuesOpenedEvent, PullRequestOpenedEvent } from "@octokit/webhooks-types";
 import { prChannel, issueChannel, blacklist } from '../../config/config.json'
 import { truncateString, isBlacklisted } from "./helpers";
@@ -18,6 +18,9 @@ export const OpenedPullRequest = async (client: Client, event: PullRequestOpened
 
 export const OpenedIssue = async (client: Client, event: IssuesOpenedEvent) => {
     const issue = event.issue;
+
+    const TITLE_LENGTH = 256;
+    const AUTHOR_LENGTH = 256;
     const DESC_LENGTH = 500;
 
     if(isBlacklisted(issue.title, issue.user.login, issue.body, blacklist)) {
@@ -28,11 +31,17 @@ export const OpenedIssue = async (client: Client, event: IssuesOpenedEvent) => {
     const channel = await client.channels.fetch(issueChannel) as TextChannel;
     let regex = /## Description of the bug(.*?)##/ms
     let match = issue.body?.match(regex);
-    let snippet = "";
+    let snippet = "No description found.";
 
     if(match && match.length > 0) {
-        snippet = "\n> " + truncateString(match[1], DESC_LENGTH).trim();
+        snippet = truncateString(match[1], DESC_LENGTH).trim();
     }
 
-    channel.send(`Issue #${issue.number} opened by ${issue.user.login}\n__**${issue.title}**__\n<${issue.html_url}>${snippet}`)
+    let embed = new EmbedBuilder();
+    embed.setTitle(truncateString(`Issue Opened: #${issue.number} ${issue.title}`, TITLE_LENGTH));
+    embed.setURL(issue.html_url);
+    embed.setAuthor({ name: truncateString(issue.user.login, AUTHOR_LENGTH), iconURL: issue.user.avatar_url, url: issue.user.html_url });
+    embed.setDescription(snippet);
+
+    channel.send({ embeds: [embed] })
 }
