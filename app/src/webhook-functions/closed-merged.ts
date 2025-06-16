@@ -25,8 +25,10 @@ const validChangelogTags = { // Up to 25 (per embed), max length per is 256
 }
 
 export const ClosedMergedPullRequest = async (client: Client, event: PullRequestClosedEvent) => {
+    const pullRequest = event.pull_request;
     const channel = await client.channels.fetch(prChannel) as TextChannel;
-    channel.send(`Pull Request #${event.number} merged by ${event.pull_request.merged_by?.login}\n${event.pull_request.user.login} - __**${event.pull_request.title}**__\n<${event.pull_request.html_url}>`);
+
+    channel.send(`Pull Request #${event.number} merged by ${pullRequest.merged_by?.login}\n${pullRequest.user.login} - __**${pullRequest.title}**__\n<${pullRequest.html_url}>`);
 
     const TITLE_LENGTH = 256;
     const AUTHOR_LENGTH = 256;
@@ -42,7 +44,7 @@ export const ClosedMergedPullRequest = async (client: Client, event: PullRequest
         (data.footer?.text.length ?? 0) +
         (data.author?.name.length ?? 0)
 
-    const body = event.pull_request.body
+    const body = pullRequest.body
     let regex = /🆑(.*)\/🆑/ms
     let changelog_match = regex.exec(body!);
     if(changelog_match === null) {
@@ -70,9 +72,13 @@ export const ClosedMergedPullRequest = async (client: Client, event: PullRequest
         if(Object.keys(dataToPrint).length >= 0) {
             const changelog = await client.channels.fetch(changelogChannel) as TextChannel;
             const allEmbeds: EmbedBuilder[] = [new EmbedBuilder()];
-            allEmbeds[0].setTitle(truncateString(`${event.pull_request.title} (#${event.number})`, TITLE_LENGTH));
-            allEmbeds[0].setURL(event.pull_request.html_url);
-            allEmbeds[0].setAuthor({ name: truncateString(event.pull_request.user.login, AUTHOR_LENGTH), iconURL: event.pull_request.user.avatar_url, url: event.pull_request.user.html_url });
+            allEmbeds[0].setTitle(truncateString(`${pullRequest.title} (#${event.number})`, TITLE_LENGTH));
+            allEmbeds[0].setURL(pullRequest.html_url);
+            allEmbeds[0].setAuthor({
+                name: truncateString(pullRequest.user.login, AUTHOR_LENGTH),
+                iconURL: pullRequest.user.avatar_url,
+                url: pullRequest.user.html_url
+            });
             for(const key of orderOfChangelog) {
                 // Split category to new message when approaching limit
                 if(embedLength(allEmbeds[allEmbeds.length-1].data) >= EMBED_LENGTH - VALUE_LENGTH * 2) {

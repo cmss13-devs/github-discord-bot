@@ -7,26 +7,27 @@ export const OpenedPullRequest = async (client: Client, event: PullRequestOpened
     const pullRequest = event.pull_request;
 
     if(isBlacklisted(pullRequest.title, pullRequest.user.login, pullRequest.body, blacklist)) {
+        console.log(`Skipping PR ${pullRequest.title} (#${pullRequest.number}) by ${pullRequest.user.login} for matching blacklist!`)
         return;
     }
 
     const channel = await client.channels.fetch(prChannel) as TextChannel;
-    
+
     channel.send(`Pull Request #${event.number} opened by ${pullRequest.user.login}\n${pullRequest.user.login} - __**${pullRequest.title}**__\n<${pullRequest.html_url}>`);
 }
 
 export const OpenedIssue = async (client: Client, event: IssuesOpenedEvent) => {
     const issue = event.issue;
-    const body = issue.body;
     const DESC_LENGTH = 500;
 
     if(isBlacklisted(issue.title, issue.user.login, issue.body, blacklist)) {
+        console.log(`Skipping Issue ${issue.title} (#${issue.number}) by ${issue.user.login} for matching blacklist!`)
         return;
     }
 
     const channel = await client.channels.fetch(issueChannel) as TextChannel;
     let regex = /## Description of the bug(.*?)##/ms
-    let match = body?.match(regex);
+    let match = issue.body?.match(regex);
     let snippet = "";
 
     if(match && match.length > 0) {
