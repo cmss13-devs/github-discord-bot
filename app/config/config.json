@@ -4,5 +4,6 @@
     "changelogChannel": "",
     "prChannel": "",
     "issueChannel": "",
-    "blacklist" : [""]
+    "blacklist" : [""],
+    "adminToken": ""
 }
