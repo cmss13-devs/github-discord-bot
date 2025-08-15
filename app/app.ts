@@ -1,10 +1,11 @@
 import { Client, GatewayIntentBits } from 'discord.js';
-import { WebhookEvent } from "@octokit/webhooks-types";
+import { IssueCommentEditedEvent, IssueCommentEvent, WebhookEvent } from "@octokit/webhooks-types";
 import { accessToken, githubWebhookAuthorizationToken } from "./config/config.json";
 import express from "express";
 import { createHmac, timingSafeEqual } from "crypto";
 import { ClosedMergedPullRequest, ClosedIssue } from './src/webhook-functions/closed-merged';
 import { OpenedPullRequest, OpenedIssue } from './src/webhook-functions/opened';
+import { IssueComment } from './src/webhook-functions/comment';
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] })
 const app = express();
@@ -12,7 +13,7 @@ const app = express();
 app.use(express.json({
     verify: (req, res, buf) => {
         const signature = req.headers['x-hub-signature-256'] as string;
-        if(!signature) {
+        if (!signature) {
             res.status(400).send("Missing signature");
             return;
         }
@@ -27,29 +28,35 @@ app.use(express.json({
 }));
 
 app.post("/", async (req, res) => {
-    const data : WebhookEvent = req.body;
+    const data: WebhookEvent = req.body;
 
-    if("action" in data) {
-        if("pull_request" in data) {
-            if(data.action === "opened") {
+    if ("action" in data) {
+        if ("comment" in data) {
+            IssueComment(data as IssueCommentEvent, "pull_request" in data);
+            return res.send("OK");
+        }
+
+
+        if ("pull_request" in data) {
+            if (data.action === "opened") {
                 OpenedPullRequest(client, data);
                 return res.send("OK");
             }
 
-            if(data.action === "closed") {
-                if(data.pull_request.merged) {
+            if (data.action === "closed") {
+                if (data.pull_request.merged) {
                     ClosedMergedPullRequest(client, data);
                     return res.send("OK");
                 }
             }
         }
-        else if("issue" in data) {
-            if(data.action === "opened") {
+        else if ("issue" in data) {
+            if (data.action === "opened") {
                 OpenedIssue(client, data);
                 return res.send("OK");
             }
 
-            if(data.action === "closed") {
+            if (data.action === "closed") {
                 ClosedIssue(client, data);
                 return res.send("OK");
             }

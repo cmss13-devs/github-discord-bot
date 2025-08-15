@@ -34,7 +34,7 @@ export const OpenedPullRequest = async (
 
         const graphqlWithAuth = graphql.defaults({
             headers: {
-                authorization: adminToken,
+                authorization: `Bearer ${adminToken}`,
             }
         })
 
@@ -80,7 +80,7 @@ export const OpenedIssue = async (client: Client, event: IssuesOpenedEvent) => {
 
         const graphqlWithAuth = graphql.defaults({
             headers: {
-                authorization: adminToken,
+                authorization: `Bearer ${adminToken}`,
             },
         });
 
