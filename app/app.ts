@@ -1,11 +1,11 @@
 import { Client, GatewayIntentBits } from 'discord.js';
 import { IssueCommentEditedEvent, IssueCommentEvent, WebhookEvent } from "@octokit/webhooks-types";
-import { accessToken, githubWebhookAuthorizationToken } from "./config/config.json";
+import config from "./config/config.json" with { type: "json" };
 import express from "express";
 import { createHmac, timingSafeEqual } from "crypto";
-import { ClosedMergedPullRequest, ClosedIssue } from './src/webhook-functions/closed-merged';
-import { OpenedPullRequest, OpenedIssue } from './src/webhook-functions/opened';
-import { IssueComment } from './src/webhook-functions/comment';
+import { ClosedMergedPullRequest, ClosedIssue } from './src/webhook-functions/closed-merged.js';
+import { OpenedPullRequest, OpenedIssue } from './src/webhook-functions/opened.js';
+import { IssueComment } from './src/webhook-functions/comment.js';
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] })
 const app = express();
@@ -17,10 +17,10 @@ app.use(express.json({
             res.status(400).send("Missing signature");
             return;
         }
-        const hmac = createHmac('sha256', githubWebhookAuthorizationToken);
+        const hmac = createHmac('sha256', config.githubWebhookAuthorizationToken);
         const digest = Buffer.from('sha256=' + hmac.update(buf).digest('hex'), 'utf8');
         const checksum = Buffer.from(signature, 'utf8');
-        if (!timingSafeEqual(digest, checksum)) {
+        if (!timingSafeEqual(digest as any, checksum as any)) {
             res.status(400).send("Invalid signature");
             return;
         }
@@ -31,7 +31,7 @@ app.post("/", async (req, res) => {
     const data: WebhookEvent = req.body;
 
     if ("action" in data) {
-        if ("comment" in data) {
+        if ("comment" in data && data.action != "deleted") {
             IssueComment(data as IssueCommentEvent, "pull_request" in data);
             return res.send("OK");
         }
@@ -72,4 +72,4 @@ client.once('ready', () => {
 
 app.listen(3000)
 
-client.login(accessToken);
+client.login(config.accessToken);

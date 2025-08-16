@@ -1,9 +1,11 @@
 {
     "compilerOptions": {
         "target": "ES2018",
-        "module": "CommonJS",
+        "module": "nodenext",
         "esModuleInterop": true,
         "resolveJsonModule": true,
-        "strictNullChecks": true
+        "strictNullChecks": true,
+        "moduleResolution": "nodenext",
+        "skipLibCheck": true
     },
 }

@@ -3,13 +3,9 @@ import {
     IssuesOpenedEvent,
     PullRequestOpenedEvent,
 } from "@octokit/webhooks-types";
-import {
-    prChannel,
-    issueChannel,
-    blacklist,
-    adminToken,
-} from "../../config/config.json";
-import { truncateString, isBlacklisted } from "./helpers";
+import config from "../../config/config.json" with { type: "json" };
+const { prChannel, issueChannel, blacklist, adminToken } = config;
+import { truncateString, isBlacklisted, isBlocklisted, blockUser } from "./helpers.js";
 import { graphql } from "@octokit/graphql";
 
 export const OpenedPullRequest = async (
@@ -38,6 +34,10 @@ export const OpenedPullRequest = async (
             }
         })
 
+        console.log(
+            `Closing and locking PR "${pullRequest.title}" (#${pullRequest.number}) by ${pullRequest.user.login} due to blacklist match.`
+        );
+
         graphqlWithAuth(`
             mutation {
                 closePullRequest(input: {pullRequestId: "${pullRequest.node_id}", clientMutationId: "github-discord-bot"}) {
@@ -49,6 +49,13 @@ export const OpenedPullRequest = async (
                 }
             }
             `)
+
+        if (isBlocklisted(pullRequest.title, pullRequest.user.login, pullRequest.body)) {
+            console.log(
+                `Blocking user "${pullRequest.user.login}" in repository "${event.repository.owner.login}" due to blocklisted pull request.`
+            );
+            blockUser(pullRequest.user.login, event.repository.owner.login)
+        }
 
         return;
     }
@@ -83,7 +90,9 @@ export const OpenedIssue = async (client: Client, event: IssuesOpenedEvent) => {
                 authorization: `Bearer ${adminToken}`,
             },
         });
-
+        console.log(
+            `Deleting Issue "${issue.title}" (#${issue.number}) by ${issue.user.login} due to blacklist match.`
+        );
         graphqlWithAuth(`
             mutation {
                 deleteIssue(input: {issueId: "${issue.node_id}", clientMutationId: "github-discord-bot"}) {
@@ -91,6 +100,13 @@ export const OpenedIssue = async (client: Client, event: IssuesOpenedEvent) => {
                 }
             }
         `);
+
+        if (isBlocklisted(issue.title, issue.user.login, issue.body)) {
+            console.log(
+                `Blocking user "${issue.user.login}" in repository "${event.repository.owner.login}" due to blocklisted issue.`
+            );
+            blockUser(issue.user.login, event.repository.owner.login)
+        }
 
         return;
     }
