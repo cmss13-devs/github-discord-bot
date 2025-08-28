@@ -11,6 +11,8 @@ const client = new Client({ intents: [GatewayIntentBits.Guilds] })
 const app = express();
 
 app.use(express.json({
+    limit: '20mb', // Currently some requests at 209kb when default limit is 100kb
+    //parameterLimit: 50000,
     verify: (req, res, buf) => {
         const signature = req.headers['x-hub-signature-256'] as string;
         if (!signature) {
