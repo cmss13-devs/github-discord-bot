@@ -12,7 +12,7 @@ const validChangelogTags = { // Up to 25 (per embed), max length per is 256
     "fix": "Bugfixes",
     "soundadd": "Sound",
     "sounddel": "Sound",
-    "soundtwek": "Sound",
+    "soundtweak": "Sound",
     "imageadd": "Image",
     "imagedel": "Image",
     "imagetweak": "Image",
