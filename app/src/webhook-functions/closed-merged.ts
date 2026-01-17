@@ -54,12 +54,8 @@ export const ClosedMergedPullRequest = async (client: Client, event: PullRequest
         (data.author?.name.length ?? 0)
 
     const body = pullRequest.body
-    let regex = /🆑(.*)\/🆑/ms
+    let regex = /(?:🆑|:cl:)(.*)\/(?:🆑|:cl:)/ms
     let changelog_match = regex.exec(body!);
-    if (changelog_match === null) {
-        regex = /:cl:(.*)\/:cl:/ms
-        changelog_match = regex.exec(body!);
-    }
 
     if (changelog_match) {
         const changelogList = changelog_match[0].trim().split("\n");
