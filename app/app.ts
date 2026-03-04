@@ -3,7 +3,7 @@ import { IssueCommentEditedEvent, IssueCommentEvent, WebhookEvent } from "@octok
 import config from "./config/config.json" with { type: "json" };
 import express from "express";
 import { createHmac, timingSafeEqual } from "crypto";
-import { ClosedMergedPullRequest, ClosedIssue } from './src/webhook-functions/closed-merged.js';
+import { ClosedMergedPullRequest, ClosedIssue, DequeuedCIFailure } from './src/webhook-functions/closed-merged.js';
 import { OpenedPullRequest, OpenedIssue } from './src/webhook-functions/opened.js';
 import { IssueComment } from './src/webhook-functions/comment.js';
 
@@ -50,6 +50,11 @@ app.post("/", async (req, res) => {
                     ClosedMergedPullRequest(client, data);
                     return res.send("OK");
                 }
+            }
+
+            if (data.action === "dequeued" && "reason" in data && data.reason === "CI_FAILURE") {
+                DequeuedCIFailure(client, data);
+                return res.send("OK");
             }
         }
         else if ("issue" in data) {

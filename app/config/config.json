@@ -4,6 +4,7 @@
     "changelogChannel": "",
     "prChannel": "",
     "issueChannel": "",
+    "ciFailureChannel": "",
     "blacklist" : [""],
     "blocklist": [],
     "adminToken": ""
